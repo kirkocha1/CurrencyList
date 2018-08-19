@@ -11,14 +11,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
         savedInstanceState ?: init()
     }
 
     private fun init() {
-        setContentView(R.layout.activity_main)
         supportFragmentManager
                 .beginTransaction()
-                .replace(R.id.content, CurrencyListFragment.newInstance())
+                .replace(R.id.content, CurrencyListFragment.newInstance(), CurrencyListFragment::class.java.simpleName)
                 .commit()
     }
 }

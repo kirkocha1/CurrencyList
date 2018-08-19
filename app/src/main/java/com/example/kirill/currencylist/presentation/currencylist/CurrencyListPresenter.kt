@@ -16,6 +16,7 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
     }
 
     private var disposable: Disposable? = null
+    private var currentBaseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY, 1.toString())
 
     override fun onFirstViewAttach() = startObserving()
 
@@ -24,36 +25,37 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
         disposable?.dispose()
     }
 
-    fun onCurrencyItemClicked(currency: CurrencyItemUnit, positon: Int) {
+    fun onCurrencyItemClicked(clickedCurrencyItemUnit: CurrencyItemUnit, positon: Int) {
         if (disposable?.isDisposed == false) {
             disposable?.dispose()
         }
-        viewState.moveBaseItem(currency, positon)
+        currentBaseCurrencyItemUnit = clickedCurrencyItemUnit
+        viewState.moveBaseItem(clickedCurrencyItemUnit, positon)
     }
 
+    fun onItemMoved(currencyItemUnit: CurrencyItemUnit) = startObserving(currencyItemUnit.currencyCode, currencyItemUnit.currencyValue)
 
-    fun onItemMoved(currencyItemUnit: CurrencyItemUnit) {
-        startObserving(currencyItemUnit.currencyCode, currencyItemUnit.currencyValue)
-    }
+    fun onItemMoved() = currentBaseCurrencyItemUnit?.let { startObserving(it.currencyCode, it.currencyValue) }
 
-    fun onValueChanged(itemUnit: CurrencyItemUnit) {
-        startObserving(itemUnit.currencyCode, itemUnit.currencyValue)
-    }
+    fun onValueChanged(itemUnit: CurrencyItemUnit) = startObserving(itemUnit.currencyCode, itemUnit.currencyValue)
 
     private fun startObserving(currency: String = DEFAULT_BASE_CURRENCY, value: String? = null) {
         if (disposable?.isDisposed == false) {
             disposable?.dispose()
         }
+        Log.d(LOG_TAG, "base: ${currency} value ${value}")
         disposable = interactor
                 .observeRates(
                         baseCurrency = currency,
                         value = value
                 )
                 .subscribe(
-                        { currencyList ->
-                            viewState.updateCurrencyList(currencyList)
-                        },
-                        { e -> Log.e(LOG_TAG, e.localizedMessage) }
+                        { currencyList -> viewState.updateCurrencyList(currentBaseCurrencyItemUnit, currencyList) },
+                        { e -> viewState.handleError(e) }
                 )
     }
+
+    fun onRetryClicked() = currentBaseCurrencyItemUnit
+            ?.let { startObserving(it.currencyCode, it.currencyValue) }
+            ?: startObserving()
 }

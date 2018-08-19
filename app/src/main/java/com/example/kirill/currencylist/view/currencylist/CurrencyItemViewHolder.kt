@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
+import com.mynameismidori.currencypicker.ExtendedCurrency
 import kotlinx.android.synthetic.main.currency_item.view.*
 
 class CurrencyItemViewHolder(
@@ -13,35 +14,28 @@ class CurrencyItemViewHolder(
         val valueChangedListener: (CurrencyItemUnit) -> Unit
 ) : RecyclerView.ViewHolder(view) {
 
-    init {
-        with(view) {
-            currencyValueEditText.setOnFocusChangeListener { v, hasFocus ->
-                if (hasFocus) {
-                    currencyItemUnit?.let { clickListener(it, layoutPosition) }
-                }
+
+    private val watcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+            currentCurrencyItem?.let {
+                it.currencyValue = s?.toString()
+                valueChangedListener(it)
             }
-            currencyValueEditText.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    currencyItemUnit?.let {
-                        it.currencyValue = s?.toString()
-                        valueChangedListener(it)
-                    }
-                }
-
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
-            })
-            setOnClickListener { currencyValueEditText.requestFocus() }
         }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
     }
 
-    private var currencyItemUnit: CurrencyItemUnit? = null
+    private var currentCurrencyItem: CurrencyItemUnit? = null
 
     fun bind(currencyItem: CurrencyItemUnit) {
-        currencyItemUnit = currencyItem
+        redrawPrimaryInfo(currencyItem)
+        currentCurrencyItem = currencyItem
         with(view) {
-            currencyCodeTextView.text = currencyItem.currencyCode
+            enableCurrencyValueProcessingIfNeed()
+            setOnClickListener { clickListener(currencyItem, layoutPosition) }
             currencyValueEditText.setText(currencyItem.currencyValue)
         }
     }
@@ -54,4 +48,25 @@ class CurrencyItemViewHolder(
         view.currencyValueEditText.isEnabled = true
     }
 
+    private fun enableCurrencyValueProcessingIfNeed() {
+        with(view) {
+            if (layoutPosition == 0) {
+                currencyValueEditText.addTextChangedListener(watcher)
+            } else {
+                currencyValueEditText.removeTextChangedListener(watcher)
+            }
+        }
+    }
+
+    private fun redrawPrimaryInfo(currencyItem: CurrencyItemUnit) {
+        view.currencyCodeTextView.text = currencyItem.currencyCode
+        view.fullCurrencyNameTextView.text = ExtendedCurrency.CURRENCIES.find { it.code == currencyItem.currencyCode }?.name
+        setFlagIfExists(currencyItem.currencyCode)
+    }
+
+    private fun setFlagIfExists(currenCode: String) {
+        ExtendedCurrency.CURRENCIES
+                .find { it.code == currenCode }
+                ?.let { view.flagImageView.setImageResource(it.flag) }
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.kirill.currencylist.view.currencylist
 
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
@@ -58,13 +59,23 @@ class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
                 itemMovedListener = { currencyValue -> presenter.onItemMoved(currencyValue) },
                 valueChangedListener = { value -> presenter.onValueChanged(value) }
         )
+        list.itemAnimator = ListItemAnimator({ presenter.onItemMoved() })
         list.layoutManager = LinearLayoutManager(context)
         list.adapter = adapter
     }
 
     override fun moveBaseItem(currency: CurrencyItemUnit, positon: Int) {
         adapter.moveBaseCurrency(currency, positon)
+        (list.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
     }
 
-    override fun updateCurrencyList(currencyList: List<CurrencyItemUnit>) = adapter.renderList(currencyList.toMutableList())
+    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyList: List<CurrencyItemUnit>) =
+            adapter.renderList(baseCurrency, currencyList.toMutableList())
+
+    override fun handleError(error: Throwable) {
+        with(Snackbar.make(listContainer, error.localizedMessage, Snackbar.LENGTH_SHORT)) {
+            setAction(R.string.retry, { v -> presenter.onRetryClicked() })
+            show()
+        }
+    }
 }

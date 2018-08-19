@@ -15,6 +15,7 @@ class CurrencyListAdapter(
 
     private var currencyItems = mutableListOf<CurrencyItemUnit>()
     private var baseCurrencyItemUnit: CurrencyItemUnit? = null
+    private var isMoving = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyItemViewHolder =
             CurrencyItemViewHolder(
@@ -32,52 +33,61 @@ class CurrencyListAdapter(
         holder.bind(currencyItems[position])
     }
 
+    override fun onBindViewHolder(holder: CurrencyItemViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position)
+        }
+    }
+
     override fun getItemCount() = currencyItems.size
 
-    fun renderList(currencyList: MutableList<CurrencyItemUnit>) {
+    fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyList: MutableList<CurrencyItemUnit>) {
         if (baseCurrencyItemUnit == null) {
+            baseCurrencyItemUnit = baseCurrencyUnit
             createList(currencyList)
         } else {
             updateList(currencyList)
         }
     }
 
+    fun moveBaseCurrency(currencyItemUnit: CurrencyItemUnit, position: Int) {
+        currencyItems
+                .removeAt(position)
+                .also { removedVal ->
+                    currencyItems.add(0, removedVal)
+                    baseCurrencyItemUnit = removedVal
+                }
+        notifyItemMoved(position, 0)
+        //update items for proper work of edit text
+        notifyItemChanged(0)
+        notifyItemChanged(1)
+        itemMovedListener(currencyItemUnit)
+        isMoving = false
+    }
+
     private fun createList(currencyList: MutableList<CurrencyItemUnit>) {
-        baseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY)
-                .also { currencyItems.add(it) }
+        baseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY, 1.toString()).also { currencyItems.add(it) }
         currencyItems.addAll(1, currencyList)
         notifyDataSetChanged()
     }
 
     private fun updateList(currencyList: MutableList<CurrencyItemUnit>) {
-        currencyList.forEach { newCurrency ->
-            currencyItems
-                    .find { newCurrency.currencyCode == it.currencyCode }
-                    ?.let {
-                        it.currencyValue = newCurrency.currencyValue
-                    }
-                    ?: let {
-                        currencyItems.add(newCurrency)
-                    }
+        if (!isMoving) {
+            currencyList.forEach { newCurrency ->
+                currencyItems
+                        .find { newCurrency.currencyCode == it.currencyCode }
+                        ?.let { it.currencyValue = newCurrency.currencyValue }
+                notifyItemRangeChanged(1, itemCount - 1)
+            }
         }
-        notifyItemRangeChanged(1, itemCount - 1)
-    }
-
-    fun moveBaseCurrency(currencyItemUnit: CurrencyItemUnit, position: Int) {
-        currencyItems
-                .removeAt(position)
-                .also { removedVal ->
-                    baseCurrencyItemUnit = removedVal
-                    currencyItems.add(0, removedVal)
-                }
-        notifyItemMoved(position, 0)
-        notifyItemChanged(0)
-        itemMovedListener(currencyItemUnit)
     }
 
     private fun resolveClick(currencyItemUnit: CurrencyItemUnit, position: Int) {
         position
                 .takeIf { it > 0 }
-                ?.let { itemClickListener(currencyItemUnit, position) }
+                ?.let {
+                    isMoving = true
+                    itemClickListener(currencyItemUnit, position)
+                }
     }
 }
