@@ -6,10 +6,14 @@ import com.arellomobile.mvp.MvpPresenter
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 import com.example.kirill.currencylist.model.interactors.currencylist.CurrencyListInteractor
 import com.example.kirill.currencylist.utils.DEFAULT_BASE_CURRENCY
+import com.example.kirill.currencylist.view.currencylist.CurrencyListFragment
 import io.reactivex.disposables.Disposable
+import javax.inject.Inject
 
 @InjectViewState
-class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : MvpPresenter<CurrencyListView>() {
+class CurrencyListPresenter @Inject constructor(
+        private val interactor: CurrencyListInteractor
+) : MvpPresenter<CurrencyListView>() {
 
     companion object {
         val LOG_TAG = CurrencyListPresenter::class.java.simpleName
@@ -23,6 +27,7 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
     override fun onDestroy() {
         super.onDestroy()
         disposable?.dispose()
+        CurrencyListFragment.clearDependency()
     }
 
     fun onCurrencyItemClicked(clickedCurrencyItemUnit: CurrencyItemUnit, positon: Int) {
@@ -33,7 +38,9 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
         viewState.moveBaseItem(clickedCurrencyItemUnit, positon)
     }
 
-    fun onItemMoved(currencyItemUnit: CurrencyItemUnit) = startObserving(currencyItemUnit.currencyCode, currencyItemUnit.currencyValue)
+    fun onItemMoved(currencyItemUnit: CurrencyItemUnit) {
+        startObserving(currencyItemUnit.currencyCode, currencyItemUnit.currencyValue)
+    }
 
     fun onValueChanged(itemUnit: CurrencyItemUnit) = startObserving(itemUnit.currencyCode, itemUnit.currencyValue)
 

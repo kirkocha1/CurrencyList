@@ -5,9 +5,13 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 
-class CurrencyListRepository(private val api: CurrencyApi, private val converter: RateToCurrencyConverter) {
+class CurrencyListRepository @Inject constructor(
+        private val api: CurrencyApi,
+        private val converter: RateToCurrencyConverter
+) {
 
     fun getRates(baseCurrency: String, value: String?) = Observable
             .timer(1, TimeUnit.SECONDS)

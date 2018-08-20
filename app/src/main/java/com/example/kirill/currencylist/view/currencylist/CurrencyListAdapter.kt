@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.kirill.currencylist.R
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
-import com.example.kirill.currencylist.utils.DEFAULT_BASE_CURRENCY
 
 class CurrencyListAdapter(
         private val itemClickListener: (CurrencyItemUnit, Int) -> Unit,
@@ -51,7 +50,7 @@ class CurrencyListAdapter(
     fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyListMap: Map<String, String>) {
         baseCurrencyItemUnit = baseCurrencyUnit
         if (itemCount == 0) {
-            createList(currencyListMap.map { (code, value) -> CurrencyItemUnit(code, value) })
+            createList(baseCurrencyUnit, currencyListMap.map { (code, value) -> CurrencyItemUnit(code, value) })
         } else {
             updateList(currencyListMap)
         }
@@ -72,8 +71,8 @@ class CurrencyListAdapter(
         isMoving = false
     }
 
-    private fun createList(currencyList: List<CurrencyItemUnit>) {
-        baseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY, 1.toString()).also { currencyItems.add(it) }
+    private fun createList(baseCurrencyUnit: CurrencyItemUnit, currencyList: List<CurrencyItemUnit>) {
+        currencyItems.add(baseCurrencyUnit)
         currencyItems.addAll(1, currencyList)
         notifyDataSetChanged()
     }

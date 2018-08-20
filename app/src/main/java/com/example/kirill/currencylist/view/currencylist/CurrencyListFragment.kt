@@ -9,45 +9,35 @@ import android.view.ViewGroup
 import com.arellomobile.mvp.MvpAppCompatFragment
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
-import com.example.kirill.currencylist.BuildConfig
 import com.example.kirill.currencylist.R
+import com.example.kirill.currencylist.di.ComponentHolder
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
-import com.example.kirill.currencylist.model.datamodels.RateToCurrencyConverter
-import com.example.kirill.currencylist.model.interactors.currencylist.CurrencyListInteractor
-import com.example.kirill.currencylist.model.repository.currencylist.CurrencyApi
-import com.example.kirill.currencylist.model.repository.currencylist.CurrencyListRepository
 import com.example.kirill.currencylist.presentation.currencylist.CurrencyListPresenter
 import com.example.kirill.currencylist.presentation.currencylist.CurrencyListView
 import kotlinx.android.synthetic.main.fragment_currency_list.*
-import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
 
 class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
 
     companion object {
         fun newInstance() = CurrencyListFragment()
+
+        fun clearDependency() = ComponentHolder.destroyComponent()
     }
 
     @InjectPresenter
     lateinit var presenter: CurrencyListPresenter
 
     @ProvidePresenter
-    fun providePresenter() = CurrencyListPresenter(
-            CurrencyListInteractor(
-                    CurrencyListRepository(
-                            api = Retrofit.Builder()
-                                    .baseUrl(BuildConfig.SERVER_URL)
-                                    .addConverterFactory(GsonConverterFactory.create())
-                                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                                    .build()
-                                    .create(CurrencyApi::class.java),
-                            converter = RateToCurrencyConverter()
-                    )
-            )
-    )
+    fun providePresenter() = ComponentHolder.getCurrencyListComponent().providePresenter()
 
     private lateinit var adapter: CurrencyListAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null || !ComponentHolder.isExist()) {
+            ComponentHolder.createComponent()
+        }
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_currency_list, container, false)
