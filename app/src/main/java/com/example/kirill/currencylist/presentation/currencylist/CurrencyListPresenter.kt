@@ -35,8 +35,6 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
 
     fun onItemMoved(currencyItemUnit: CurrencyItemUnit) = startObserving(currencyItemUnit.currencyCode, currencyItemUnit.currencyValue)
 
-    fun onItemMoved() = currentBaseCurrencyItemUnit?.let { startObserving(it.currencyCode, it.currencyValue) }
-
     fun onValueChanged(itemUnit: CurrencyItemUnit) = startObserving(itemUnit.currencyCode, itemUnit.currencyValue)
 
     private fun startObserving(currency: String = DEFAULT_BASE_CURRENCY, value: String? = null) {
@@ -55,7 +53,5 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
                 )
     }
 
-    fun onRetryClicked() = currentBaseCurrencyItemUnit
-            ?.let { startObserving(it.currencyCode, it.currencyValue) }
-            ?: startObserving()
+    fun onRetryClicked() = startObserving(currentBaseCurrencyItemUnit.currencyCode, currentBaseCurrencyItemUnit.currencyValue)
 }

@@ -59,7 +59,6 @@ class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
                 itemMovedListener = { currencyValue -> presenter.onItemMoved(currencyValue) },
                 valueChangedListener = { value -> presenter.onValueChanged(value) }
         )
-        list.itemAnimator = ListItemAnimator({ presenter.onItemMoved() })
         list.layoutManager = LinearLayoutManager(context)
         list.adapter = adapter
     }
