@@ -9,7 +9,7 @@ import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 interface CurrencyListView : ErrorHandler, MvpView {
 
     @StateStrategyType(AddToEndSingleStrategy::class)
-    fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyList: List<CurrencyItemUnit>)
+    fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, String>)
 
     @StateStrategyType(SkipStrategy::class)
     fun moveBaseItem(currency: CurrencyItemUnit, positon: Int)

@@ -48,7 +48,7 @@ class CurrencyListPresenter(private val interactor: CurrencyListInteractor) : Mv
                         value = value
                 )
                 .subscribe(
-                        { currencyList -> viewState.updateCurrencyList(currentBaseCurrencyItemUnit, currencyList) },
+                        { currencyMap -> viewState.updateCurrencyList(currentBaseCurrencyItemUnit, currencyMap) },
                         { e -> viewState.handleError(e) }
                 )
     }

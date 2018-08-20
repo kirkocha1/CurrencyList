@@ -40,6 +40,11 @@ class CurrencyItemViewHolder(
         }
     }
 
+    fun bind(currencyItem: CurrencyItemUnit, newValue: String) {
+        currencyItem.currencyValue = newValue
+        view.currencyValueEditText.setText(currencyItem.currencyValue)
+    }
+
     fun disableCurrencyInput() {
         view.currencyValueEditText.isEnabled = false
     }

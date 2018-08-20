@@ -34,19 +34,26 @@ class CurrencyListAdapter(
     }
 
     override fun onBindViewHolder(holder: CurrencyItemViewHolder, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isEmpty()) {
-            onBindViewHolder(holder, position)
+        when {
+            payloads.isEmpty() -> onBindViewHolder(holder, position)
+            payloads[0] is PayloadData -> processWithPayloads(holder, (payloads[0] as PayloadData).map, position)
+        }
+    }
+
+    private fun processWithPayloads(holder: CurrencyItemViewHolder, map: Map<String, String>, position: Int) {
+        with(currencyItems[position]) {
+            map.get(this.currencyCode)?.let { holder.bind(this, it) }
         }
     }
 
     override fun getItemCount() = currencyItems.size
 
-    fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyList: MutableList<CurrencyItemUnit>) {
-        if (baseCurrencyItemUnit == null) {
-            baseCurrencyItemUnit = baseCurrencyUnit
-            createList(currencyList)
+    fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyListMap: Map<String, String>) {
+        baseCurrencyItemUnit = baseCurrencyUnit
+        if (itemCount == 0) {
+            createList(currencyListMap.map { (code, value) -> CurrencyItemUnit(code, value) })
         } else {
-            updateList(currencyList)
+            updateList(currencyListMap)
         }
     }
 
@@ -65,20 +72,15 @@ class CurrencyListAdapter(
         isMoving = false
     }
 
-    private fun createList(currencyList: MutableList<CurrencyItemUnit>) {
+    private fun createList(currencyList: List<CurrencyItemUnit>) {
         baseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY, 1.toString()).also { currencyItems.add(it) }
         currencyItems.addAll(1, currencyList)
         notifyDataSetChanged()
     }
 
-    private fun updateList(currencyList: MutableList<CurrencyItemUnit>) {
+    private fun updateList(currencyList: Map<String, String>) {
         if (!isMoving) {
-            currencyList.forEach { newCurrency ->
-                currencyItems
-                        .find { newCurrency.currencyCode == it.currencyCode }
-                        ?.let { it.currencyValue = newCurrency.currencyValue }
-                notifyItemRangeChanged(1, itemCount - 1)
-            }
+            notifyItemRangeChanged(1, itemCount - 1, PayloadData(currencyList))
         }
     }
 
@@ -90,4 +92,6 @@ class CurrencyListAdapter(
                     itemClickListener(currencyItemUnit, position)
                 }
     }
+
+    internal data class PayloadData(val map: Map<String, String>)
 }

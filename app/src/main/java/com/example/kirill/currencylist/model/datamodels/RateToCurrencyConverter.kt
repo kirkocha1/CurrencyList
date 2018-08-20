@@ -8,4 +8,5 @@ class RateToCurrencyConverter {
         }
     }
 
+    fun convertToMap(rates: Rates) = rates.rates.toMap()
 }

@@ -1,7 +1,6 @@
 package com.example.kirill.currencylist.model.repository.currencylist
 
 import com.example.kirill.currencylist.model.datamodels.RateToCurrencyConverter
-import com.example.kirill.currencylist.model.datamodels.Rates
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -16,7 +15,7 @@ class CurrencyListRepository(private val api: CurrencyApi, private val converter
                 api
                         .getRates(baseCurrency, value)
                         .map { rates ->
-                            converter.convert(rates)
+                            converter.convertToMap(rates)
                         }
                         .toObservable()
             }

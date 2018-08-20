@@ -68,12 +68,12 @@ class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
         (list.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
     }
 
-    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyList: List<CurrencyItemUnit>) =
-            adapter.renderList(baseCurrency, currencyList.toMutableList())
+    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, String>) =
+            adapter.renderList(baseCurrency, currencyMap)
 
     override fun handleError(error: Throwable) {
         with(Snackbar.make(listContainer, error.localizedMessage, Snackbar.LENGTH_SHORT)) {
-            setAction(R.string.retry, { v -> presenter.onRetryClicked() })
+            setAction(R.string.retry, { presenter.onRetryClicked() })
             show()
         }
     }
