@@ -1,6 +1,7 @@
 package com.example.kirill.currencylist.view.currencylist
 
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.kirill.currencylist.R
@@ -8,13 +9,11 @@ import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 
 class CurrencyListAdapter(
         private val itemClickListener: (CurrencyItemUnit, Int) -> Unit,
-        private val itemMovedListener: (CurrencyItemUnit) -> Unit,
         private val valueChangedListener: (CurrencyItemUnit) -> Unit
 ) : RecyclerView.Adapter<CurrencyItemViewHolder>() {
 
     private var currencyItems = mutableListOf<CurrencyItemUnit>()
     private var baseCurrencyItemUnit: CurrencyItemUnit? = null
-    private var isMoving = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyItemViewHolder =
             CurrencyItemViewHolder(
@@ -56,21 +55,6 @@ class CurrencyListAdapter(
         }
     }
 
-    fun moveBaseCurrency(currencyItemUnit: CurrencyItemUnit, position: Int) {
-        currencyItems
-                .removeAt(position)
-                .also { removedVal ->
-                    currencyItems.add(0, removedVal)
-                    baseCurrencyItemUnit = removedVal
-                }
-        notifyItemMoved(position, 0)
-        //update items for proper work of edit text
-        notifyItemChanged(0)
-        notifyItemChanged(1)
-        itemMovedListener(currencyItemUnit)
-        isMoving = false
-    }
-
     private fun createList(baseCurrencyUnit: CurrencyItemUnit, currencyList: List<CurrencyItemUnit>) {
         currencyItems.add(baseCurrencyUnit)
         currencyItems.addAll(1, currencyList)
@@ -78,17 +62,27 @@ class CurrencyListAdapter(
     }
 
     private fun updateList(currencyList: Map<String, String>) {
-        if (!isMoving) {
-            notifyItemRangeChanged(1, itemCount - 1, PayloadData(currencyList))
-        }
+        notifyItemRangeChanged(1, itemCount - 1, PayloadData(currencyList))
     }
 
     private fun resolveClick(currencyItemUnit: CurrencyItemUnit, position: Int) {
         position
                 .takeIf { it > 0 }
                 ?.let {
-                    isMoving = true
                     itemClickListener(currencyItemUnit, position)
+                    currencyItems
+                            .removeAt(position)
+                            .also { removedVal ->
+                                currencyItems.add(0, removedVal)
+                                baseCurrencyItemUnit = removedVal
+                            }
+                    itemClickListener(currencyItemUnit, position)
+                    Log.e("ADaPTER", "before notify")
+                    notifyItemMoved(position, 0)
+                    //update items for proper work of edit text
+                    notifyItemChanged(0)
+                    notifyItemChanged(1)
+
                 }
     }
 

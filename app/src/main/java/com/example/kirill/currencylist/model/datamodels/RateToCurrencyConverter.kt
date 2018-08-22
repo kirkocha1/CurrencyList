@@ -10,3 +10,8 @@ class RateToCurrencyConverter {
 
     fun convertToMap(rates: Rates) = rates.rates.toMap()
 }
+
+data class BaseWithRates(
+        val baseCurrency: String,
+        val rates: Map<String, String>
+)

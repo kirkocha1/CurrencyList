@@ -2,7 +2,10 @@ package com.example.kirill.currencylist.view.currencylist
 
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +22,7 @@ import kotlinx.android.synthetic.main.fragment_currency_list.*
 class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
 
     companion object {
+
         fun newInstance() = CurrencyListFragment()
 
         fun clearDependency() = ComponentHolder.destroyComponent()
@@ -45,17 +49,34 @@ class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         adapter = CurrencyListAdapter(
-                itemClickListener = { currencyValue, positon -> presenter.onCurrencyItemClicked(currencyValue, positon) },
-                itemMovedListener = { currencyValue -> presenter.onItemMoved(currencyValue) },
-                valueChangedListener = { value -> presenter.onValueChanged(value) }
+                itemClickListener = { currencyValue, positon ->
+                    (list.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
+                    presenter.onCurrencyItemClicked(currencyValue, positon)
+                },
+                valueChangedListener = { value -> presenter.onBaseCurrencyValueChanged(value) }
         )
+        list.itemAnimator = object : DefaultItemAnimator() {
+            override fun onMoveStarting(item: RecyclerView.ViewHolder?) {
+                super.onMoveStarting(item)
+                Log.e("itemAnimator", "onMoveStarting")
+            }
+
+
+            override fun onMoveFinished(item: RecyclerView.ViewHolder?) {
+//                Log.e("itemAnimator", "onMoveFinised")
+            }
+
+            override fun onChangeStarting(item: RecyclerView.ViewHolder?, oldItem: Boolean) {
+                super.onChangeStarting(item, oldItem)
+                Log.e("itemAnimator", "onMoveStarting")
+            }
+
+            override fun onChangeFinished(item: RecyclerView.ViewHolder?, oldItem: Boolean) {
+//                Log.e("ItemAnimator", "onChangedFinished")
+            }
+        }
         list.layoutManager = LinearLayoutManager(context)
         list.adapter = adapter
-    }
-
-    override fun moveBaseItem(currency: CurrencyItemUnit, positon: Int) {
-        adapter.moveBaseCurrency(currency, positon)
-        (list.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
     }
 
     override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, String>) =

@@ -13,7 +13,6 @@ import javax.inject.Singleton
 @Module
 class CurrencyListModule {
 
-
     @Provides
     @Singleton
     fun provideRetrofit() = Retrofit.Builder()
