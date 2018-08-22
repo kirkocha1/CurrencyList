@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.kirill.currencylist.R
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
+import java.math.BigDecimal
 
 class CurrencyListAdapter(
         private val savedInstanceState: Bundle?,
@@ -18,7 +19,6 @@ class CurrencyListAdapter(
     }
 
     private var currencyItems = mutableListOf<CurrencyItemUnit>()
-    private var baseCurrencyItemUnit: CurrencyItemUnit? = null
 
     init {
         savedInstanceState
@@ -51,15 +51,13 @@ class CurrencyListAdapter(
 
     override fun getItemCount() = currencyItems.size
 
-
     fun saveState(outState: Bundle) {
         if (itemCount != 0) {
             outState.putParcelableArrayList(KEY_CURRENCY_LIST, ArrayList(currencyItems))
         }
     }
 
-    fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyListMap: Map<String, String>) {
-        baseCurrencyItemUnit = baseCurrencyUnit
+    fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyListMap: Map<String, BigDecimal>) {
         if (itemCount == 0) {
             createList(baseCurrencyUnit, currencyListMap.map { (code, value) -> CurrencyItemUnit(code, value) })
         } else {
@@ -67,7 +65,7 @@ class CurrencyListAdapter(
         }
     }
 
-    private fun processWithPayloads(holder: CurrencyItemViewHolder, map: Map<String, String>, position: Int) {
+    private fun processWithPayloads(holder: CurrencyItemViewHolder, map: Map<String, BigDecimal>, position: Int) {
         with(currencyItems[position]) {
             map[this.currencyCode]?.let { holder.bind(this, it) }
         }
@@ -79,7 +77,7 @@ class CurrencyListAdapter(
         notifyDataSetChanged()
     }
 
-    private fun updateList(currencyList: Map<String, String>) {
+    private fun updateList(currencyList: Map<String, BigDecimal>) {
         notifyItemRangeChanged(1, itemCount - 1, PayloadData(currencyList))
     }
 
@@ -92,7 +90,6 @@ class CurrencyListAdapter(
                             .removeAt(position)
                             .also { removedVal ->
                                 currencyItems.add(0, removedVal)
-                                baseCurrencyItemUnit = removedVal
                             }
                     itemClickListener(currencyItemUnit, position)
                     notifyItemMoved(position, 0)
@@ -102,5 +99,5 @@ class CurrencyListAdapter(
                 }
     }
 
-    internal data class PayloadData(val map: Map<String, String>)
+    internal data class PayloadData(val map: Map<String, BigDecimal>)
 }

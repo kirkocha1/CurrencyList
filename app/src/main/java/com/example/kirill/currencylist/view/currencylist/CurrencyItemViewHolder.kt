@@ -7,6 +7,7 @@ import android.view.View
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 import com.mynameismidori.currencypicker.ExtendedCurrency
 import kotlinx.android.synthetic.main.currency_item.view.*
+import java.math.BigDecimal
 
 class CurrencyItemViewHolder(
         private val view: View,
@@ -21,10 +22,16 @@ class CurrencyItemViewHolder(
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            currentCurrencyItem?.let {
-                it.currencyValue = s?.toString()
-                valueChangedListener(it)
+            currentCurrencyItem?.let { itemUnit ->
+                val rawVal = s?.toString()
+                itemUnit.currencyValue = if (rawVal?.isNotBlank() == true) {
+                    rawVal.toBigDecimal()
+                } else {
+                    BigDecimal.ZERO
+                }
+                valueChangedListener(itemUnit)
             }
+
         }
     }
 
@@ -35,14 +42,14 @@ class CurrencyItemViewHolder(
         currentCurrencyItem = currencyItem
         with(view) {
             setOnClickListener { clickListener(currencyItem, layoutPosition) }
-            currencyValueEditText.setText(currencyItem.currencyValue)
+            currencyValueEditText.setText(currencyItem.currencyValue.toString())
             enableCurrencyValueProcessingIfNeed()
         }
     }
 
-    fun bind(currencyItem: CurrencyItemUnit, newValue: String) {
+    fun bind(currencyItem: CurrencyItemUnit, newValue: BigDecimal) {
         currencyItem.currencyValue = newValue
-        view.currencyValueEditText.setText(currencyItem.currencyValue)
+        view.currencyValueEditText.setText(currencyItem.currencyValue.toString())
     }
 
     fun disableCurrencyInput() {

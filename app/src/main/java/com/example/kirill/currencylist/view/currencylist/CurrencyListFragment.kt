@@ -15,6 +15,7 @@ import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 import com.example.kirill.currencylist.presentation.currencylist.CurrencyListPresenter
 import com.example.kirill.currencylist.presentation.currencylist.CurrencyListView
 import kotlinx.android.synthetic.main.fragment_currency_list.*
+import java.math.BigDecimal
 
 class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
 
@@ -62,7 +63,7 @@ class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
         super.onSaveInstanceState(outState)
     }
 
-    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, String>) =
+    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, BigDecimal>) =
             adapter.renderList(baseCurrency, currencyMap)
 
     override fun handleError(error: Throwable) {

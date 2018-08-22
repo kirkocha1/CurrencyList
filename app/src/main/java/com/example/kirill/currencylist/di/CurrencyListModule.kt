@@ -25,7 +25,6 @@ class CurrencyListModule {
     @Singleton
     fun provideCurrencyApi(retrofit: Retrofit) = retrofit.create(CurrencyApi::class.java)
 
-
     @Provides
     @Singleton
     fun provideConverter() = RateToCurrencyConverter()
