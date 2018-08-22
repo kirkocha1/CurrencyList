@@ -1,23 +1,34 @@
 package com.example.kirill.currencylist.view.currencylist
 
+import android.os.Bundle
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.kirill.currencylist.R
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 
 class CurrencyListAdapter(
+        private val savedInstanceState: Bundle?,
         private val itemClickListener: (CurrencyItemUnit, Int) -> Unit,
         private val valueChangedListener: (CurrencyItemUnit) -> Unit
 ) : RecyclerView.Adapter<CurrencyItemViewHolder>() {
 
+    companion object {
+        const val KEY_CURRENCY_LIST = "key_currency_list"
+    }
+
     private var currencyItems = mutableListOf<CurrencyItemUnit>()
     private var baseCurrencyItemUnit: CurrencyItemUnit? = null
 
+    init {
+        savedInstanceState
+                ?.getParcelableArrayList<CurrencyItemUnit>(KEY_CURRENCY_LIST)
+                ?.let { currencyItems = it }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyItemViewHolder =
             CurrencyItemViewHolder(
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.currency_item, parent, false),
+                    view = LayoutInflater.from(parent.context).inflate(R.layout.currency_item, parent, false),
                     clickListener = ::resolveClick,
                     valueChangedListener = { value -> valueChangedListener(value) }
             )
@@ -38,13 +49,14 @@ class CurrencyListAdapter(
         }
     }
 
-    private fun processWithPayloads(holder: CurrencyItemViewHolder, map: Map<String, String>, position: Int) {
-        with(currencyItems[position]) {
-            map.get(this.currencyCode)?.let { holder.bind(this, it) }
+    override fun getItemCount() = currencyItems.size
+
+
+    fun saveState(outState: Bundle) {
+        if (itemCount != 0) {
+            outState.putParcelableArrayList(KEY_CURRENCY_LIST, ArrayList(currencyItems))
         }
     }
-
-    override fun getItemCount() = currencyItems.size
 
     fun renderList(baseCurrencyUnit: CurrencyItemUnit, currencyListMap: Map<String, String>) {
         baseCurrencyItemUnit = baseCurrencyUnit
@@ -52,6 +64,12 @@ class CurrencyListAdapter(
             createList(baseCurrencyUnit, currencyListMap.map { (code, value) -> CurrencyItemUnit(code, value) })
         } else {
             updateList(currencyListMap)
+        }
+    }
+
+    private fun processWithPayloads(holder: CurrencyItemViewHolder, map: Map<String, String>, position: Int) {
+        with(currencyItems[position]) {
+            map[this.currencyCode]?.let { holder.bind(this, it) }
         }
     }
 
@@ -77,12 +95,10 @@ class CurrencyListAdapter(
                                 baseCurrencyItemUnit = removedVal
                             }
                     itemClickListener(currencyItemUnit, position)
-                    Log.e("ADaPTER", "before notify")
                     notifyItemMoved(position, 0)
                     //update items for proper work of edit text
                     notifyItemChanged(0)
                     notifyItemChanged(1)
-
                 }
     }
 

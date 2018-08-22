@@ -20,6 +20,7 @@ class CurrencyListPresenter @Inject constructor(
         val LOG_TAG = CurrencyListPresenter::class.java.simpleName
     }
 
+
     private var disposable: Disposable? = null
     private var currentBaseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY, 1.toString())
 
@@ -54,12 +55,15 @@ class CurrencyListPresenter @Inject constructor(
                 )
                 .flatMap { rates -> interactor.validateRates(rates, currentBaseCurrencyItemUnit) }
                 .subscribe(
-                        { currencyMap ->
-                            Log.e(LOG_TAG, "startObserving result ${currentBaseCurrencyItemUnit.currencyCode} ${currentBaseCurrencyItemUnit.currencyValue} size ${currencyMap.size}")
-                            viewState.updateCurrencyList(currentBaseCurrencyItemUnit, currencyMap)
-                        },
-                        { e -> processError(e) }
+                        ::onGetCurrencyMap,
+                        ::processError
                 )
+    }
+
+    private fun onGetCurrencyMap(currencyMap: Map<String, String>) {
+        Log.e(LOG_TAG, "startObserving result ${currentBaseCurrencyItemUnit.currencyCode} ${currentBaseCurrencyItemUnit.currencyValue} size ${currencyMap.size}")
+        viewState.updateCurrencyList(currentBaseCurrencyItemUnit, currencyMap)
+
     }
 
     private fun processError(error: Throwable) {
