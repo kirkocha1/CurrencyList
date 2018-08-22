@@ -13,7 +13,6 @@ import javax.inject.Singleton
 @Module
 class CurrencyListModule {
 
-
     @Provides
     @Singleton
     fun provideRetrofit() = Retrofit.Builder()
@@ -25,7 +24,6 @@ class CurrencyListModule {
     @Provides
     @Singleton
     fun provideCurrencyApi(retrofit: Retrofit) = retrofit.create(CurrencyApi::class.java)
-
 
     @Provides
     @Singleton

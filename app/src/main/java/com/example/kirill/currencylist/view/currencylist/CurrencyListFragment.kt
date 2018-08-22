@@ -15,10 +15,12 @@ import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 import com.example.kirill.currencylist.presentation.currencylist.CurrencyListPresenter
 import com.example.kirill.currencylist.presentation.currencylist.CurrencyListView
 import kotlinx.android.synthetic.main.fragment_currency_list.*
+import java.math.BigDecimal
 
 class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
 
     companion object {
+
         fun newInstance() = CurrencyListFragment()
 
         fun clearDependency() = ComponentHolder.destroyComponent()
@@ -45,20 +47,23 @@ class CurrencyListFragment : MvpAppCompatFragment(), CurrencyListView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         adapter = CurrencyListAdapter(
-                itemClickListener = { currencyValue, positon -> presenter.onCurrencyItemClicked(currencyValue, positon) },
-                itemMovedListener = { currencyValue -> presenter.onItemMoved(currencyValue) },
-                valueChangedListener = { value -> presenter.onValueChanged(value) }
+                savedInstanceState = savedInstanceState,
+                itemClickListener = { currencyValue, positon ->
+                    (list.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
+                    presenter.onCurrencyItemClicked(currencyValue, positon)
+                },
+                valueChangedListener = { value -> presenter.onBaseCurrencyValueChanged(value) }
         )
-        list.layoutManager = LinearLayoutManager(context)
         list.adapter = adapter
+        list.layoutManager = LinearLayoutManager(context)
     }
 
-    override fun moveBaseItem(currency: CurrencyItemUnit, positon: Int) {
-        adapter.moveBaseCurrency(currency, positon)
-        (list.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
+    override fun onSaveInstanceState(outState: Bundle) {
+        adapter.saveState(outState)
+        super.onSaveInstanceState(outState)
     }
 
-    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, String>) =
+    override fun updateCurrencyList(baseCurrency: CurrencyItemUnit, currencyMap: Map<String, BigDecimal>) =
             adapter.renderList(baseCurrency, currencyMap)
 
     override fun handleError(error: Throwable) {
