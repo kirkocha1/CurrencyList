@@ -50,6 +50,8 @@ class CurrencyListPresenter @Inject constructor(
     }
 
     private fun startObserving(currency: String = DEFAULT_BASE_CURRENCY, value: BigDecimal = BigDecimal.ONE) {
+        Log.e(LOG_TAG, "startObserving")
+        Log.e(LOG_TAG, "startObserving ${currency} ${value}")
         stopObserving()
         disposable = interactor
                 .observeRates(

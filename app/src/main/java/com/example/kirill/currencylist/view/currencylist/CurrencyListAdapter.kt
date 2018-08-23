@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.example.kirill.currencylist.R
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 import java.math.BigDecimal
+import java.util.*
 
 class CurrencyListAdapter(
         private val savedInstanceState: Bundle?,
@@ -19,6 +20,7 @@ class CurrencyListAdapter(
     }
 
     private var currencyItems = mutableListOf<CurrencyItemUnit>()
+    private var listMerger = ListMerger()
 
     init {
         savedInstanceState
@@ -77,9 +79,13 @@ class CurrencyListAdapter(
         notifyDataSetChanged()
     }
 
-    private fun updateList(currencyList: Map<String, BigDecimal>) {
-        notifyItemRangeChanged(1, itemCount - 1, PayloadData(currencyList))
+    private fun updateList(newCurrencyMap: Map<String, BigDecimal>) {
+        val listWithOutBaseCurrency = currencyItems.subList(1, currencyItems.size - 1)
+        currencyItems = mutableListOf(currencyItems[0])
+        currencyItems.addAll(listMerger.constructUpdatedList(listWithOutBaseCurrency, newCurrencyMap))
+        notifyItemRangeChanged(1, itemCount - 1, PayloadData(newCurrencyMap))
     }
+
 
     private fun resolveClick(currencyItemUnit: CurrencyItemUnit, position: Int) {
         position
