@@ -1,6 +1,7 @@
 package com.example.kirill.currencylist.view.currencylist
 
 import android.os.Bundle
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -80,10 +81,14 @@ class CurrencyListAdapter(
     }
 
     private fun updateList(newCurrencyMap: Map<String, BigDecimal>) {
-        val listWithOutBaseCurrency = currencyItems.subList(1, currencyItems.size - 1)
-        currencyItems = mutableListOf(currencyItems[0])
-        currencyItems.addAll(listMerger.constructUpdatedList(listWithOutBaseCurrency, newCurrencyMap))
-        notifyItemRangeChanged(1, itemCount - 1, PayloadData(newCurrencyMap))
+        val newListToChange = mutableListOf<CurrencyItemUnit>().apply {
+            add(currencyItems[0])
+            addAll(listMerger.constructUpdatedList(currencyItems.subList(1, currencyItems.size ), newCurrencyMap))
+        }
+        val diffResult = DiffUtil.calculateDiff(CurrencyDiffCallback(currencyItems, newListToChange, PayloadData(newCurrencyMap)))
+        currencyItems.clear()
+        currencyItems.addAll(newListToChange)
+        diffResult.dispatchUpdatesTo(this)
     }
 
 
@@ -106,4 +111,21 @@ class CurrencyListAdapter(
     }
 
     internal data class PayloadData(val map: Map<String, BigDecimal>)
+
+    internal class CurrencyDiffCallback(
+            private val oldList: MutableList<CurrencyItemUnit>,
+            private val newList: MutableList<CurrencyItemUnit>,
+            private val payload: PayloadData
+    ) : DiffUtil.Callback() {
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+                oldList[oldItemPosition] == newList[newItemPosition]
+
+        override fun getOldListSize() = oldList.size
+
+        override fun getNewListSize() = newList.size
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) = false
+
+        override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int) = payload
+    }
 }

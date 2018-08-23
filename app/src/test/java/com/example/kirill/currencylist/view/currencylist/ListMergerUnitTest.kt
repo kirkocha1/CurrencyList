@@ -30,7 +30,7 @@ class ListMergerUnitTest {
             assert(result[i].currencyCode != "FAKE")
         }
     }
-    
+
     private fun constructList() = mutableListOf<CurrencyItemUnit>().apply {
         add(CurrencyItemUnit("EUR", 1.toBigDecimal()))
         add(CurrencyItemUnit("BGN", 1.toBigDecimal()))
