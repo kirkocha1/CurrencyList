@@ -1,6 +1,5 @@
 package com.example.kirill.currencylist.presentation.currencylist
 
-import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.arellomobile.mvp.MvpPresenter
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
@@ -16,10 +15,6 @@ import javax.inject.Inject
 class CurrencyListPresenter @Inject constructor(
         private val interactor: CurrencyListInteractor
 ) : MvpPresenter<CurrencyListView>() {
-
-    companion object {
-        val LOG_TAG = CurrencyListPresenter::class.java.simpleName
-    }
 
     private var disposable: Disposable? = null
     private var currentBaseCurrencyItemUnit = CurrencyItemUnit(DEFAULT_BASE_CURRENCY, BigDecimal.valueOf(1))
@@ -68,7 +63,6 @@ class CurrencyListPresenter @Inject constructor(
     }
 
     private fun processError(error: Throwable) = if (error is BaseCurrencyInMapException) {
-        Log.e(LOG_TAG, error.localizedMessage)
         startObserving(currentBaseCurrencyItemUnit.currencyCode, currentBaseCurrencyItemUnit.currencyValue)
     } else {
         viewState.handleError(error)

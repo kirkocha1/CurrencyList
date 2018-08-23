@@ -47,10 +47,8 @@ class CurrencyItemViewHolder(
         }
     }
 
-    fun bind(currencyItem: CurrencyItemUnit, newValue: BigDecimal) {
-        currencyItem.currencyValue = newValue
-        view.currencyValueEditText.setText(currencyItem.currencyValue.toString())
-    }
+    fun bind(newValue: BigDecimal) = view.currencyValueEditText.setText(newValue.toString())
+
 
     fun disableCurrencyInput() {
         view.currencyValueEditText.isEnabled = false

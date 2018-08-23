@@ -1,12 +1,14 @@
 package com.example.kirill.currencylist.view.currencylist
 
 import android.os.Bundle
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.kirill.currencylist.R
 import com.example.kirill.currencylist.model.datamodels.CurrencyItemUnit
 import java.math.BigDecimal
+import java.util.*
 
 class CurrencyListAdapter(
         private val savedInstanceState: Bundle?,
@@ -19,6 +21,7 @@ class CurrencyListAdapter(
     }
 
     private var currencyItems = mutableListOf<CurrencyItemUnit>()
+    private var listMerger = ListMerger()
 
     init {
         savedInstanceState
@@ -44,8 +47,8 @@ class CurrencyListAdapter(
 
     override fun onBindViewHolder(holder: CurrencyItemViewHolder, position: Int, payloads: MutableList<Any>) {
         when {
-            payloads.isEmpty() -> onBindViewHolder(holder, position)
-            payloads[0] is PayloadData -> processWithPayloads(holder, (payloads[0] as PayloadData).map, position)
+            payloads.isEmpty() -> super.onBindViewHolder(holder, position, payloads)
+            else -> processWithPayloads(holder, position)
         }
     }
 
@@ -65,10 +68,8 @@ class CurrencyListAdapter(
         }
     }
 
-    private fun processWithPayloads(holder: CurrencyItemViewHolder, map: Map<String, BigDecimal>, position: Int) {
-        with(currencyItems[position]) {
-            map[this.currencyCode]?.let { holder.bind(this, it) }
-        }
+    private fun processWithPayloads(holder: CurrencyItemViewHolder, position: Int) {
+        holder.bind(currencyItems[position].currencyValue)
     }
 
     private fun createList(baseCurrencyUnit: CurrencyItemUnit, currencyList: List<CurrencyItemUnit>) {
@@ -77,8 +78,16 @@ class CurrencyListAdapter(
         notifyDataSetChanged()
     }
 
-    private fun updateList(currencyList: Map<String, BigDecimal>) {
-        notifyItemRangeChanged(1, itemCount - 1, PayloadData(currencyList))
+    private fun updateList(newCurrencyMap: Map<String, BigDecimal>) {
+        val newListToChange = mutableListOf<CurrencyItemUnit>().apply {
+            add(currencyItems[0])
+            addAll(listMerger.constructUpdatedList(currencyItems.subList(1, currencyItems.size - 1), newCurrencyMap))
+        }
+        val diffResult = DiffUtil.calculateDiff(CurrencyDiffCallback(currencyItems, newListToChange))
+        currencyItems.clear()
+        currencyItems.addAll(newListToChange)
+
+        diffResult.dispatchUpdatesTo(this)
     }
 
     private fun resolveClick(currencyItemUnit: CurrencyItemUnit, position: Int) {
@@ -93,11 +102,28 @@ class CurrencyListAdapter(
                             }
                     itemClickListener(currencyItemUnit, position)
                     notifyItemMoved(position, 0)
-                    //update items for proper work of edit text
                     notifyItemChanged(0)
                     notifyItemChanged(1)
                 }
     }
 
-    internal data class PayloadData(val map: Map<String, BigDecimal>)
+    internal class CurrencyDiffCallback(
+            private val oldList: MutableList<CurrencyItemUnit>,
+            private val newList: MutableList<CurrencyItemUnit>
+    ) : DiffUtil.Callback() {
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+                oldList[oldItemPosition].currencyCode == newList[newItemPosition].currencyCode
+
+        override fun getOldListSize() = oldList.size
+
+        override fun getNewListSize() = newList.size
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+                newList[newItemPosition].currencyValue == oldList[oldItemPosition].currencyValue
+
+        override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int) =
+                PayloadData(true)
+    }
+
+    internal data class PayloadData(val needToUpdateValue: Boolean)
 }
